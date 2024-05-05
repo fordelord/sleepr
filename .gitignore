@@ -1,7 +1,8 @@
 # compiled output
 /dist
-/node_modules
+**/node_modules
 /build
+/data
 
 # Logs
 logs
@@ -36,7 +37,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # dotenv environment variable files
-.env
+apps/reservations/.env
 .env.development.local
 .env.test.local
 .env.production.local
@@ -54,3 +55,6 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+/data/
+data/db/diagnostic.data/metrics.2024-04-14T08-51-11Z-00000
+*.2024-04-14T09-01-18Z-00000
