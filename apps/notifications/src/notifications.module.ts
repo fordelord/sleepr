@@ -3,7 +3,7 @@ import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { LoggerModule } from '@app/common';
+import { HealthModule, LoggerModule } from '@app/common';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { LoggerModule } from '@app/common';
       }),
     }),
     LoggerModule,
+    HealthModule,
   ],
   controllers: [NotificationsController],
   providers: [NotificationsService],
