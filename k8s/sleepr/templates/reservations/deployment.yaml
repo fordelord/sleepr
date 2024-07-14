@@ -15,6 +15,7 @@ spec:
         app: reservations
     spec:
       containers:
+{{/*        - image: 493932364692.dkr.ecr.us-east-1.amazonaws.com/reservations:latest*/}}
       - image: europe-central2-docker.pkg.dev/sleepr-421612/reservations/production
         name: reservations
         env:
