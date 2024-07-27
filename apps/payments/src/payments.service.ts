@@ -1,12 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
-import { NOTIFICATION_SERVICE, PAYMENT_SERVICE } from '@app/common';
-import { ClientProxy } from '@nestjs/microservices';
+import {
+  NOTIFICATIONS_SERVICE_NAME,
+  NotificationsServiceClient,
+} from '@app/common';
+import { ClientGrpc } from '@nestjs/microservices';
 import { PaymentsCreateChargeDto } from 'apps/payments/src/dto/payments-create-charge.dto';
 
 @Injectable()
-export class PaymentsService {
+export class PaymentsService implements OnModuleInit {
+  private notificationsService: NotificationsServiceClient;
   private readonly stripe = new Stripe(
     this.configService.get('STRIPE_SECRET_KEY'),
     { apiVersion: '2024-04-10' },
@@ -14,9 +18,16 @@ export class PaymentsService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(NOTIFICATION_SERVICE)
-    private readonly notificationsService: ClientProxy,
+    @Inject(NOTIFICATIONS_SERVICE_NAME)
+    private readonly client: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.notificationsService =
+      this.client.getService<NotificationsServiceClient>(
+        NOTIFICATIONS_SERVICE_NAME,
+      );
+  }
 
   async createCharge({ card, amount, email }: PaymentsCreateChargeDto) {
     const paymentIntent = await this.stripe.paymentIntents.create({
@@ -30,10 +41,19 @@ export class PaymentsService {
       },
     });
 
-    this.notificationsService.emit('notify_email', {
-      email,
-      text: `Payment is ${amount}`,
-    });
+    if (!this.notificationsService) {
+      this.notificationsService =
+        this.client.getService<NotificationsServiceClient>(
+          NOTIFICATIONS_SERVICE_NAME,
+        );
+    }
+
+    this.notificationsService
+      .notifyEmail({
+        email,
+        text: `Payment is ${amount}`,
+      })
+      .subscribe(() => {});
 
     return paymentIntent;
   }
